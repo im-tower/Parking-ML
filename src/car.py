@@ -4,6 +4,7 @@ class Car:
     def __init__(self, arcade, cell) -> None:
         self.arcade = arcade
         self.cell = cell
+        self.cell.available = False
         self.color = self.arcade.color.BLUE
 
     def draw(self):
@@ -13,6 +14,8 @@ class Car:
         self.path = path
 
     def move(self):
+        if len(self.path) == 0:
+            return
         for cell in self.cell.adjacent_cells:
             if cell.id == self.path[0] and cell.available:
                 self.cell.available = True
