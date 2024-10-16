@@ -3,7 +3,7 @@ class Cell:
     size = 20
     id = 0
     cells = []
-    def __init__(self, arcade, x, y) -> None:
+    def __init__(self, arcade, x, y, temporal = False) -> None:
         self.arcade = arcade
         self.x = x
         self.y = y
@@ -12,7 +12,8 @@ class Cell:
         Cell.id += 1
         self.available = True
         self.color = self.arcade.color.WHITE
-        Cell.cells.append(self)
+        if not temporal:
+            Cell.cells.append(self)
     
     def draw(self):
         self.arcade.draw_lbwh_rectangle_filled(self.x, self.y, self.size, self.size, self.color)
@@ -22,6 +23,9 @@ class Cell:
     
     def __repr__(self) -> str:
         return f'Cell({self.x}, {self.y}, {self.id})'
+    
+    def save(self):
+        Cell.cells.append(self)
 
     @classmethod
     def dijkstra(cls, source):
