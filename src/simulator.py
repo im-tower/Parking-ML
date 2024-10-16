@@ -7,7 +7,7 @@ import random
 SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 650
 SCREEN_TITLE = "Simulator"
-SIMULATION_SPEED = 0.01
+SIMULATION_SPEED = 0.7
 
 
 class Window(arcade.Window):
@@ -32,6 +32,12 @@ class Window(arcade.Window):
         paths = paths[:3]
         select = random.randint(0, 2)
         self.car.set_path(paths[select])
+        parking = None
+        for cell in self.cells:
+            if isinstance(cell, ParkingLot):
+                parking = cell
+                break
+        self.car.set_path(Cell.path_between(self.car.cell, parking))
     def on_draw(self):
         self.clear()
         # Code to draw the screen goes here
@@ -66,6 +72,13 @@ class Window(arcade.Window):
                 elif direction == 'right':
                     grid[int(i)][int(j)].connect(grid[int(i) + 1][int(j)])
                 elif direction == 'intersection':
+                    grid[int(i)][int(j)].connect(grid[int(i)][int(j) + 1])
+                    grid[int(i)][int(j)].connect(grid[int(i)][int(j) - 1])
+                    grid[int(i)][int(j)].connect(grid[int(i) - 1][int(j)])
+                    grid[int(i)][int(j)].connect(grid[int(i) + 1][int(j)])
+                elif direction == 'parking':
+                    grid[int(i)][int(j)] = ParkingLot(arcade, int(i) * 20 + 10, int(j) * 20 + 10)
+                    print(grid[int(i)][int(j)].id)
                     grid[int(i)][int(j)].connect(grid[int(i)][int(j) + 1])
                     grid[int(i)][int(j)].connect(grid[int(i)][int(j) - 1])
                     grid[int(i)][int(j)].connect(grid[int(i) - 1][int(j)])

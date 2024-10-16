@@ -74,3 +74,8 @@ class ParkingLot(Cell):
 
     def draw(self):
         self.arcade.draw_lbwh_rectangle_filled(self.x, self.y, self.size, self.size, self.color)
+
+    def connect(self, cell):
+        self.adjacent_cells.append(cell)
+        cell.adjacent_cells.append(self)
+        return self

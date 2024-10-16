@@ -60,6 +60,8 @@ class Window(arcade.Window):
             self.brush = arcade.color.YELLOW
         elif symbol == arcade.key.ENTER:
             self.brush = arcade.color.PURPLE
+        elif symbol == arcade.key.P:
+            self.brush = arcade.color.PINK
         elif symbol == arcade.key.DELETE:
             self.brush = arcade.color.WHITE
         elif symbol == arcade.key.SPACE:
@@ -90,6 +92,8 @@ class Window(arcade.Window):
                 self.grid[i][j]["direction"] = "down"
             elif self.brush == arcade.color.PURPLE:
                 self.grid[i][j]["direction"] = "intersection"
+            elif self.brush == arcade.color.PINK:
+                self.grid[i][j]["direction"] = "parking"
             else:
                 self.grid[i][j]["direction"] = None
 
