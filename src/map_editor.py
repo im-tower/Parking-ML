@@ -1,6 +1,8 @@
 import arcade
 import random
 import os
+import tkinter as tk
+from tkinter import filedialog
 # Constants
 SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 650
@@ -34,8 +36,10 @@ class Window(arcade.Window):
                     "direction" : None
                 })
                 self.shape_list.append(shape)
+        # Llamar a la función de importación al iniciar
+        self.import_map()
 
-
+        
     def on_draw(self):
         self.clear()
         # Code to draw the screen goes here
@@ -68,6 +72,8 @@ class Window(arcade.Window):
             self.brush = None
         elif symbol == arcade.key.E:
             self.export()
+        elif symbol == arcade.key.I:  # Presiona 'I' para importar un archivo
+            self.import_map()
 
     def on_mouse_release(self, x: int, y: int, button: int, modifiers: int) -> bool | None:
         if self.brush:
@@ -100,12 +106,17 @@ class Window(arcade.Window):
         return super().on_mouse_release(x, y, button, modifiers)
     
     def export(self):
-        # Encuentra el siguiente número de archivo disponible
+        # Crear la carpeta "parking" si no existe
+        directory = "parking"
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
+        # Encuentra el siguiente número de archivo disponible dentro de la carpeta
         num = 1
-        while os.path.exists(f"map_{num}.sim"):
+        while os.path.exists(f"{directory}/map_{num}.sim"):
             num += 1
 
-        filename = f"map_{num}.sim"
+        filename = f"{directory}/map_{num}.sim"
         
         with open(filename, "wb") as f:
             for i in range(SCREEN_WIDTH // GRID_SIZE):
@@ -114,6 +125,70 @@ class Window(arcade.Window):
                         f.write(f"{i} {j} {self.grid[i][j]['direction']}\n".encode())
         
         print(f"Map exported as {filename}")
+    
+    def import_map(self):
+        # Crear una ventana de diálogo para seleccionar un archivo
+        root = tk.Tk()
+        root.withdraw()  # Ocultar la ventana principal de Tkinter
+        file_path = filedialog.askopenfilename(filetypes=[("Simulation Files", "*.sim")])
+
+        if not file_path:
+            print("No file selected")
+            return
+
+        try:
+            # Limpiar la cuadrícula y la lista de formas antes de cargar un nuevo mapa
+            self.shape_list = arcade.shape_list.ShapeElementList()
+            for i in range(SCREEN_WIDTH // GRID_SIZE):
+                for j in range(SCREEN_HEIGHT // GRID_SIZE):
+                    self.grid[i][j]["color"] = arcade.color.WHITE
+                    self.grid[i][j]["direction"] = None
+                    shape = arcade.shape_list.create_rectangle_outline(
+                        i * GRID_SIZE + GRID_SIZE / 2, j * GRID_SIZE + GRID_SIZE / 2, GRID_SIZE, GRID_SIZE, arcade.color.WHITE
+                    )
+                    self.grid[i][j]["shape"] = shape
+                    self.shape_list.append(shape)
+
+            # Leer y cargar el contenido del archivo seleccionado
+            with open(file_path, "r") as f:
+                for line in f:
+                    i, j, direction = line.strip().split()
+                    i, j = int(i), int(j)
+
+                    # Actualizar la celda con la dirección importada
+                    if direction == "right":
+                        self.brush = arcade.color.RED
+                    elif direction == "left":
+                        self.brush = arcade.color.BLUE
+                    elif direction == "up":
+                        self.brush = arcade.color.GREEN
+                    elif direction == "down":
+                        self.brush = arcade.color.YELLOW
+                    elif direction == "intersection":
+                        self.brush = arcade.color.PURPLE
+                    elif direction == "parking":
+                        self.brush = arcade.color.PINK
+                    else:
+                        self.brush = arcade.color.WHITE
+
+                    # Actualizar color y dirección en la celda
+                    self.grid[i][j]["color"] = self.brush
+                    self.grid[i][j]["direction"] = direction
+
+                    # Crear un nuevo shape y actualizarlo directamente
+                    new_shape = arcade.shape_list.create_rectangle_outline(
+                        i * GRID_SIZE + GRID_SIZE / 2, j * GRID_SIZE + GRID_SIZE / 2, GRID_SIZE, GRID_SIZE, self.brush
+                    )
+                    self.grid[i][j]["shape"] = new_shape
+                    self.shape_list.append(new_shape)
+
+            print(f"Map imported from {file_path}")
+
+        except Exception as e:
+            print(f"Error importing map: {e}")
+
+
+
 
 
 def main():
