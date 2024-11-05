@@ -1,6 +1,6 @@
 import arcade
 import random
-
+import os
 # Constants
 SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 650
@@ -100,13 +100,21 @@ class Window(arcade.Window):
         return super().on_mouse_release(x, y, button, modifiers)
     
     def export(self):
-        with open("map.sim", "wb") as f:
+        # Encuentra el siguiente número de archivo disponible
+        num = 1
+        while os.path.exists(f"map_{num}.sim"):
+            num += 1
+
+        filename = f"map_{num}.sim"
+        
+        with open(filename, "wb") as f:
             for i in range(SCREEN_WIDTH // GRID_SIZE):
                 for j in range(SCREEN_HEIGHT // GRID_SIZE):
                     if self.grid[i][j]["color"] != arcade.color.WHITE:
                         f.write(f"{i} {j} {self.grid[i][j]['direction']}\n".encode())
-        print("Map exported")
-    
+        
+        print(f"Map exported as {filename}")
+
 
 def main():
     """Main function"""
