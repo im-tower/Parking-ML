@@ -13,17 +13,18 @@ SIMULATION_SPEED = 0.7
 class Window(arcade.Window):
 
     def __init__(self):
-
         # Call the parent class and set up the window
         super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
-        
-
+        self.average_search_time = 0
+        self.average_pollution = 0
+        self.car_count = 0  # Contador de coches
 
     def setup(self):
         self.next_update_time = 0
         self.cells = []
         self.load_map()
         self.car = Car(arcade, self.cells[0])
+        self.car_count += 1  # Incrementar el contador de coches
         # Show all possible paths to all cells
         paths = []
         for cell in self.cells:
@@ -38,21 +39,54 @@ class Window(arcade.Window):
                 parking = cell
                 break
         self.car.set_path(Cell.path_between(self.car.cell, parking))
+
     def on_draw(self):
         self.clear()
-        # Code to draw the screen goes here
+        # Dibujar las celdas y el coche
         for cell in self.cells:
             cell.draw()
         self.car.draw()
 
+        # Dibujar la información en la columna derecha
+        self.draw_info()
+
+    def draw_info(self):
+        # Calcular promedios
+        if self.car_count > 0:
+            self.average_search_time = self.car.search_time / self.car_count
+            self.average_pollution = self.car.pollution / self.car_count
+
+        # Definir posición y tamaño del recuadro
+        box_x = SCREEN_WIDTH - 220
+        box_y = SCREEN_HEIGHT - 100
+        box_width = 220
+        box_height = 90
+
+        # Dibujar el borde negro (rectángulo más grande)
+        #arcade.draw_lrbt_rectangle_filled(box_y, box_y + box_height, box_x, box_x + box_width, arcade.color.BLACK)
+        # Dibujar el recuadro blanco (rectángulo más pequeño)
+        arcade.draw_lrbt_rectangle_filled(
+            left=box_x,
+            right=box_x + box_width,
+            top=box_y + box_height,
+            bottom=box_y,
+            color=arcade.color.WHITE
+        )
+
+        
+        # Mostrar la información
+        arcade.draw_text(f"Tiempo de búsqueda promedio: {self.average_search_time:.2f}", 
+                         box_x +5, box_y + 50, arcade.color.BLACK, 11)
+        arcade.draw_text(f"Contaminación promedio: {self.average_pollution:.2f}", 
+                         box_x +5, box_y + 30, arcade.color.BLACK, 11)
+
     def on_update(self, delta_time):
-        # Code to update the screen goes here
+        # Actualizar la pantalla
         if self.next_update_time > 0:
             self.next_update_time -= delta_time
             return
         self.next_update_time = SIMULATION_SPEED
         self.car.move()
-
 
     def load_map(self):
         grid = []
@@ -78,7 +112,6 @@ class Window(arcade.Window):
                     grid[int(i)][int(j)].connect(grid[int(i) + 1][int(j)])
                 elif direction == 'parking':
                     grid[int(i)][int(j)] = ParkingLot(arcade, int(i) * 20 + 10, int(j) * 20 + 10)
-                    print(grid[int(i)][int(j)].id)
                     grid[int(i)][int(j)].connect(grid[int(i)][int(j) + 1])
                     grid[int(i)][int(j)].connect(grid[int(i)][int(j) - 1])
                     grid[int(i)][int(j)].connect(grid[int(i) - 1][int(j)])
@@ -88,7 +121,7 @@ class Window(arcade.Window):
 
 
 def main():
-    """Main function"""
+    """Función principal"""
     window = Window()
     window.setup()
     arcade.run()
