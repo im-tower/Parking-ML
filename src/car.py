@@ -1,4 +1,3 @@
-from cell import Cell, ParkingLot
 class Car:
     size = 20
     def __init__(self, arcade, cell) -> None:
@@ -8,6 +7,7 @@ class Car:
         self.color = self.arcade.color.BLUE
         self.pollution = 0
         self.search_time = 0
+        self.path = []
 
     def draw(self):
         self.arcade.draw_lbwh_rectangle_filled(self.cell.x, self.cell.y, self.size, self.size, self.color)
@@ -28,7 +28,7 @@ class Car:
                 self.cell = cell
                 self.path.pop(0)
                 self.cell.available = False
-                if type(self.cell) == ParkingLot:
+                if type(self.cell.type) == 'ParkingLot':
                     self.color = self.arcade.color.GRAY
                 break
         self.pollution += 1

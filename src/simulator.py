@@ -1,6 +1,6 @@
 import arcade
+from cell import Cell, ParkingLot, SpawnCell
 from car import Car
-from cell import Cell, ParkingLot
 import random
 import tkinter as tk
 from tkinter import filedialog
@@ -41,13 +41,16 @@ class Window(arcade.Window):
                 parking = cell
                 break
         self.car.set_path(Cell.path_between(self.car.cell, parking))
+        self.cars = [self.car]
+        self.spawn_cells = [cell for cell in self.cells if isinstance(cell, SpawnCell)]
 
     def on_draw(self):
         self.clear()
         # Dibujar las celdas y el coche
         for cell in self.cells:
             cell.draw()
-        self.car.draw()
+        for car in self.cars:
+            car.draw()
 
         # Dibujar la información en la columna derecha
         self.draw_info()
@@ -87,8 +90,15 @@ class Window(arcade.Window):
         if self.next_update_time > 0:
             self.next_update_time -= delta_time
             return
+        if random.randint(1,2) == 1:
+            available_spawns = [cell for cell in self.spawn_cells if cell.available]
+            if len(available_spawns) > 0:
+                select = random.randint(0, len(available_spawns) - 1)
+                self.cars.append(self.spawn_cells[select].spawn_car())
+                print(f"Car {self.car_count} spawned")
         self.next_update_time = SIMULATION_SPEED
-        self.car.move()
+        for car in self.cars:
+            car.move()
 
     def load_map(self):
         # Crear una ventana de diálogo para seleccionar un archivo
@@ -127,6 +137,12 @@ class Window(arcade.Window):
                         grid[int(i)][int(j)].connect(grid[int(i) + 1][int(j)])
                     elif direction == 'parking':
                         grid[int(i)][int(j)] = ParkingLot(arcade, int(i) * 20 + 10, int(j) * 20 + 10)
+                        grid[int(i)][int(j)].connect(grid[int(i)][int(j) + 1])
+                        grid[int(i)][int(j)].connect(grid[int(i)][int(j) - 1])
+                        grid[int(i)][int(j)].connect(grid[int(i) - 1][int(j)])
+                        grid[int(i)][int(j)].connect(grid[int(i) + 1][int(j)])
+                    elif direction == 'spawn':
+                        grid[int(i)][int(j)] = SpawnCell(arcade, int(i) * 20 + 10, int(j) * 20 + 10)
                         grid[int(i)][int(j)].connect(grid[int(i)][int(j) + 1])
                         grid[int(i)][int(j)].connect(grid[int(i)][int(j) - 1])
                         grid[int(i)][int(j)].connect(grid[int(i) - 1][int(j)])

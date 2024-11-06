@@ -1,4 +1,4 @@
-
+from car import Car
 class Cell:
     size = 20
     id = 0
@@ -14,6 +14,7 @@ class Cell:
         self.color = self.arcade.color.WHITE
         if not temporal:
             Cell.cells.append(self)
+        self.type = 'Cell'
     
     def draw(self):
         self.arcade.draw_lbwh_rectangle_filled(self.x, self.y, self.size, self.size, self.color)
@@ -71,6 +72,7 @@ class ParkingLot(Cell):
     def __init__(self, arcade, x, y) -> None:
         super().__init__(arcade, x, y)
         self.color = self.arcade.color.GREEN
+        self.type = 'ParkingLot'
 
     def draw(self):
         self.arcade.draw_lbwh_rectangle_filled(self.x, self.y, self.size, self.size, self.color)
@@ -79,3 +81,22 @@ class ParkingLot(Cell):
         self.adjacent_cells.append(cell)
         cell.adjacent_cells.append(self)
         return self
+    
+class SpawnCell(Cell):
+    size = 20
+    def __init__(self, arcade, x, y) -> None:
+        super().__init__(arcade, x, y)
+        self.color = self.arcade.color.ORANGE
+        self.type = 'SpawnCell'
+
+    def draw(self):
+        self.arcade.draw_lbwh_rectangle_filled(self.x, self.y, self.size, self.size, self.color)
+
+    def connect(self, cell):
+        self.adjacent_cells.append(cell)
+        cell.adjacent_cells.append(self)
+        return self
+
+    def spawn_car(self):
+        self.available = False
+        return Car(self.arcade, self)

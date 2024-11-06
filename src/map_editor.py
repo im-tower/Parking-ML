@@ -74,6 +74,8 @@ class Window(arcade.Window):
             self.export()
         elif symbol == arcade.key.I:  # Presiona 'I' para importar un archivo
             self.import_map()
+        elif symbol == arcade.key.S: # Casilla de Spawn
+            self.brush = arcade.color.ORANGE
 
     def on_mouse_release(self, x: int, y: int, button: int, modifiers: int) -> bool | None:
         if self.brush:
@@ -100,6 +102,8 @@ class Window(arcade.Window):
                 self.grid[i][j]["direction"] = "intersection"
             elif self.brush == arcade.color.PINK:
                 self.grid[i][j]["direction"] = "parking"
+            elif self.brush == arcade.color.ORANGE:
+                self.grid[i][j]["direction"] = "spawn"
             else:
                 self.grid[i][j]["direction"] = None
 
