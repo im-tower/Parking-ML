@@ -73,6 +73,7 @@ class ParkingLot(Cell):
         super().__init__(arcade, x, y)
         self.color = self.arcade.color.GREEN
         self.type = 'ParkingLot'
+        self.reserved = False
 
     def draw(self):
         self.arcade.draw_lbwh_rectangle_filled(self.x, self.y, self.size, self.size, self.color)

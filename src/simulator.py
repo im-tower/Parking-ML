@@ -5,6 +5,8 @@ import random
 import tkinter as tk
 from tkinter import filedialog
 
+from controller import NearestParkingAvailableController
+
 # Constants
 SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 650
@@ -27,22 +29,10 @@ class Window(arcade.Window):
         self.load_map()
         self.car = Car(arcade, self.cells[0])
         self.car_count += 1  # Incrementar el contador de coches
-        # Show all possible paths to all cells
-        paths = []
-        for cell in self.cells:
-            paths.append(Cell.path_between(self.car.cell, cell))
-        paths.sort(key=len, reverse=True)
-        paths = paths[:3]
-        select = random.randint(0, 2)
-        self.car.set_path(paths[select])
-        parking = None
-        for cell in self.cells:
-            if isinstance(cell, ParkingLot):
-                parking = cell
-                break
-        self.car.set_path(Cell.path_between(self.car.cell, parking))
         self.cars = [self.car]
         self.spawn_cells = [cell for cell in self.cells if isinstance(cell, SpawnCell)]
+        self.parking_lots = [cell for cell in self.cells if isinstance(cell, ParkingLot)]
+        self.controller = NearestParkingAvailableController(self)
 
     def on_draw(self):
         self.clear()
@@ -90,6 +80,7 @@ class Window(arcade.Window):
         if self.next_update_time > 0:
             self.next_update_time -= delta_time
             return
+        self.controller.update()
         if random.randint(1,2) == 1:
             available_spawns = [cell for cell in self.spawn_cells if cell.available]
             if len(available_spawns) > 0:
