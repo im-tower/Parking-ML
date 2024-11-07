@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from cell import Cell
+import arcade
 
 class Controller:
 
@@ -15,13 +16,13 @@ class Controller:
 class NearestParkingAvailableController(Controller):
 
     def update(self):
-        not_assigned_cars = [car for car in self.simulation.cars if len(car.path) == 0]
+        not_assigned_cars = [car for car in self.simulation.cars if len(car.path) == 0 and car.color == arcade.color.BLUE]
         for car in not_assigned_cars:
             # Calculate all possible paths to parking lots
             paths = []
             for parking in self.simulation.parking_lots:
                 paths.append([Cell.path_between(car.cell, parking), parking])
-            paths.sort(key=len, reverse=True)
+            paths.sort(key=lambda pair: len(pair[0]))
             if len(paths) > 0:
                 for path in paths:
                     if not path[1].reserved:
