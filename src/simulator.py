@@ -7,6 +7,10 @@ from tkinter import filedialog
 
 from controller import NearestParkingAvailableController
 
+import random
+import matplotlib.pyplot as plt
+
+import math
 # Constants
 SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 650
@@ -23,6 +27,12 @@ class Window(arcade.Window):
         self.average_pollution = 0
         self.car_count = 0  # Contador de coches
 
+        # Atributos inicializados en setup
+        self.arrival_timer = 0  # Tiempo acumulado
+        self.next_arrival_time = 0  # Tiempo hasta la próxima llegada
+        self.arrival_times = []  # Lista para almacenar los tiempos entre llegadas
+        self.service_times = []  # Lista para almacenar los tiempos de servicio
+        
     def setup(self):
         self.next_update_time = 0
         self.cells = []
@@ -35,6 +45,10 @@ class Window(arcade.Window):
         self.controller = NearestParkingAvailableController(self)
         self.total_Search_time = 0
         self.total_pollution = 0
+
+        # Inicializar temporizador
+        self.arrival_timer = 0
+        self.next_arrival_time = self.get_next_arrival_time()
 
     def on_draw(self):
         self.clear()
@@ -86,21 +100,74 @@ class Window(arcade.Window):
         arcade.draw_text(f"Contaminación promedio: {self.average_pollution:.2f}", 
                          box_x +5, box_y + 30, arcade.color.BLACK, 11)
 
+    def get_next_arrival_time(self):
+        """
+        Genera el tiempo hasta la próxima llegada de coche con una distribución exponencial.
+        """
+        lambda_rate = 1 / 0.5  # Tasa de llegada: 1 coche cada 0.5 segundos
+        return -math.log(1 - random.random()) / lambda_rate
+
     def on_update(self, delta_time):
-        # Actualizar la pantalla
+        # Asegurarse de que los temporizadores estén inicializados
+        if self.arrival_timer is None or self.next_arrival_time is None:
+            self.setup()
+
+        # Actualizar la pantalla y el contador de tiempo
         if self.next_update_time > 0:
             self.next_update_time -= delta_time
             return
         self.controller.update()
-        if random.randint(1,2) == 1:
+
+        # Incrementar el contador de tiempo de llegada
+        self.arrival_timer += delta_time
+
+        print(f"Tiempo acumulado: {self.arrival_timer:.2f} segundos")
+
+        # Verificar si el tiempo acumulado ha superado el siguiente tiempo de llegada
+        if self.arrival_timer >= self.next_arrival_time:
             available_spawns = [cell for cell in self.spawn_cells if cell.available]
-            if len(available_spawns) > 0:
-                select = random.randint(0, len(available_spawns) - 1)
-                self.cars.append(self.spawn_cells[select].spawn_car())
+            if available_spawns:
+                # Generar un nuevo coche en una celda de spawn disponible
+                selected_spawn = random.choice(available_spawns)
+                new_car = selected_spawn.spawn_car()
+                self.cars.append(new_car)
+                self.car_count += 1
                 print(f"Car {self.car_count} spawned")
+            else:
+                print("No hay espacio disponible para un nuevo vehículo.")
+
+            # Reiniciar el temporizador y calcular el tiempo para la siguiente llegada
+            self.arrival_timer = 0
+            self.next_arrival_time = self.get_next_arrival_time()
+
+            print(f"Nuevo tiempo de llegada: {self.next_arrival_time:.2f} segundos")
+
+        # Actualizar el tiempo de la próxima actualización y mover los autos
         self.next_update_time = SIMULATION_SPEED
         for car in self.cars:
             car.move()
+    
+    # Función para graficar los histogramas
+    @staticmethod
+    def plot_histograms(arrival_times, service_times):
+        plt.figure(figsize=(12, 5))
+
+        # Histograma de tiempos entre llegadas
+        plt.subplot(1, 2, 1)
+        plt.hist(arrival_times, bins=20, color='blue', alpha=0.7)
+        plt.title('Histograma de Tiempos entre Llegadas')
+        plt.xlabel('Tiempo (segundos)')
+        plt.ylabel('Frecuencia')
+
+        # Histograma de tiempos de servicio
+        plt.subplot(1, 2, 2)
+        plt.hist(service_times, bins=20, color='green', alpha=0.7)
+        plt.title('Histograma de Tiempos de Servicio')
+        plt.xlabel('Tiempo (segundos)')
+        plt.ylabel('Frecuencia')
+
+        plt.tight_layout()
+        plt.show()
 
     def load_map(self):
         # Crear una ventana de diálogo para seleccionar un archivo
@@ -160,6 +227,8 @@ def main():
     window = Window()
     window.setup()
     arcade.run()
+    # Al final de la simulación, o cuando quieras visualizar los histogramas
+    Window.plot_histograms(window.arrival_timer, window.service_times)
 
 
 if __name__ == "__main__":
