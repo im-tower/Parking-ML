@@ -33,6 +33,8 @@ class Window(arcade.Window):
         self.spawn_cells = [cell for cell in self.cells if isinstance(cell, SpawnCell)]
         self.parking_lots = [cell for cell in self.cells if isinstance(cell, ParkingLot)]
         self.controller = NearestParkingAvailableController(self)
+        self.total_Search_time = 0
+        self.total_pollution = 0
 
     def on_draw(self):
         self.clear()
@@ -47,9 +49,18 @@ class Window(arcade.Window):
 
     def draw_info(self):
         # Calcular promedios
-        if self.car_count > 0:
-            self.average_search_time = self.car.search_time / self.car_count
-            self.average_pollution = self.car.pollution / self.car_count
+        car_count = len(self.cars)
+    
+    # Calcular el tiempo de búsqueda promedio y la contaminación promedio
+        if car_count > 0:
+            total_search_time = sum(car.search_time for car in self.cars)
+            total_pollution = sum(car.pollution for car in self.cars)
+            
+            self.average_search_time = total_search_time / car_count
+            self.average_pollution = total_pollution / car_count
+        else:
+            self.average_search_time = 0
+            self.average_pollution = 0
 
         # Definir posición y tamaño del recuadro
         box_x = SCREEN_WIDTH - 220
