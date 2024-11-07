@@ -3,6 +3,7 @@ from cell import Cell, ParkingLot, SpawnCell
 from car import Car
 from timer import Timer
 import random
+import math
 import tkinter as tk
 from tkinter import filedialog
 
@@ -13,7 +14,7 @@ SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 650
 SCREEN_TITLE = "Simulator"
 SIMULATION_SPEED = 0.1
-LAMBDA_CARS = 1/2 # 1 car every 3 ticks.
+LAMBDA_CARS = 1/10 # 1 car every 3 ticks.
 
 
 class Window(arcade.Window):
@@ -96,17 +97,14 @@ class Window(arcade.Window):
             self.next_update_time -= delta_time
             return
         if self.timer_spawn.update(1):
-            self.timer_spawn.reset(int((random.expovariate(LAMBDA_CARS)+1)))
+            self.timer_spawn.reset(round(random.expovariate(LAMBDA_CARS)))
             self.arrival_times.append(self.timer_spawn.time)
-
-
-        self.controller.update()
-        if random.randint(1,2) == 1:
             available_spawns = [cell for cell in self.spawn_cells if cell.available]
             if len(available_spawns) > 0:
                 select = random.randint(0, len(available_spawns) - 1)
                 self.cars.append(self.spawn_cells[select].spawn_car())
-                print(f"Car {self.car_count} spawned")
+
+        self.controller.update()
         self.next_update_time = SIMULATION_SPEED
         for car in self.cars:
             car.move()
@@ -165,7 +163,7 @@ class Window(arcade.Window):
 
 def plot_histogram(arrival_times):
     import matplotlib.pyplot as plt
-    plt.hist(arrival_times, bins=20)
+    plt.hist(arrival_times, bins=4)
     plt.xlabel("Ticks")
     plt.ylabel("Number of cars")
     plt.title("Arrival times")
