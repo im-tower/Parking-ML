@@ -1,6 +1,7 @@
 import arcade
 from cell import Cell, ParkingLot, SpawnCell
 from car import Car
+from timer import Timer
 import random
 import tkinter as tk
 from tkinter import filedialog
@@ -11,7 +12,8 @@ from controller import NearestParkingAvailableController
 SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 650
 SCREEN_TITLE = "Simulator"
-SIMULATION_SPEED = 0.7
+SIMULATION_SPEED = 0.1
+LAMBDA_CARS = 1/2 # 1 car every 3 ticks.
 
 
 class Window(arcade.Window):
@@ -35,6 +37,8 @@ class Window(arcade.Window):
         self.controller = NearestParkingAvailableController(self)
         self.total_Search_time = 0
         self.total_pollution = 0
+        self.timer_spawn = Timer(random.expovariate(LAMBDA_CARS))
+        self.arrival_times = []
 
     def on_draw(self):
         self.clear()
@@ -91,6 +95,11 @@ class Window(arcade.Window):
         if self.next_update_time > 0:
             self.next_update_time -= delta_time
             return
+        if self.timer_spawn.update(1):
+            self.timer_spawn.reset(int((random.expovariate(LAMBDA_CARS)+1)))
+            self.arrival_times.append(self.timer_spawn.time)
+
+
         self.controller.update()
         if random.randint(1,2) == 1:
             available_spawns = [cell for cell in self.spawn_cells if cell.available]
@@ -154,12 +163,20 @@ class Window(arcade.Window):
         except Exception as e:
             print(f"Error loading map: {e}")
 
+def plot_histogram(arrival_times):
+    import matplotlib.pyplot as plt
+    plt.hist(arrival_times, bins=20)
+    plt.xlabel("Ticks")
+    plt.ylabel("Number of cars")
+    plt.title("Arrival times")
+    plt.show()
 
 def main():
     """Función principal"""
     window = Window()
     window.setup()
     arcade.run()
+    plot_histogram(window.arrival_times)
 
 
 if __name__ == "__main__":
