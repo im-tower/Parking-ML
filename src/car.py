@@ -21,14 +21,13 @@ class Car:
         
         # Incrementa el tiempo de búsqueda por cada intento de movimiento
         self.search_time += 1 
-        
         for cell in self.cell.adjacent_cells:
             if cell.id == self.path[0] and cell.available:
                 self.cell.available = True
                 self.cell = cell
                 self.path.pop(0)
                 self.cell.available = False
-                if type(self.cell.type) == 'ParkingLot':
+                if self.cell.type == 'ParkingLot':
                     self.color = self.arcade.color.GRAY
                 break
         self.pollution += 1
