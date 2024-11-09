@@ -14,7 +14,7 @@ SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 650
 SCREEN_TITLE = "Simulator"
 SIMULATION_SPEED = 0.1
-LAMBDA_CARS = 1/10 # 1 car every 3 ticks.
+LAMBDA_CARS = 1 # 1 car every 3 ticks.
 
 
 class Window(arcade.Window):
@@ -24,15 +24,12 @@ class Window(arcade.Window):
         super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
         self.average_search_time = 0
         self.average_pollution = 0
-        self.car_count = 0  # Contador de coches
 
     def setup(self):
         self.next_update_time = 0
         self.cells = []
         self.load_map()
-        self.car = Car(arcade, self.cells[0])
-        self.car_count += 1  # Incrementar el contador de coches
-        self.cars = [self.car]
+        self.cars = []
         self.spawn_cells = [cell for cell in self.cells if isinstance(cell, SpawnCell)]
         self.parking_lots = [cell for cell in self.cells if isinstance(cell, ParkingLot)]
         self.controller = NearestParkingAvailableController(self)

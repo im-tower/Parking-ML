@@ -39,7 +39,6 @@ class Cell:
         while unvisited:
             current = min(unvisited, key=lambda cell: distances[cell])
             unvisited.remove(current)
-            
             for neighbor in current.adjacent_cells:
                 if neighbor in unvisited:
                     new_distance = distances[current] + 1  # Assuming equal weights for simplicity
