@@ -11,6 +11,7 @@ class Car:
         self.path = []
         self.parking_timer = None  # Nuevo: Temporizador de estacionamiento
         self.parking_lot = None    # Referencia al ParkingLot donde está estacionado
+        self.is_exiting = False     # indicar que está saliendo
 
     def draw(self):
         self.arcade.draw_lbwh_rectangle_filled(self.cell.x, self.cell.y, self.size, self.size, self.color)
@@ -39,12 +40,16 @@ class Car:
                 self.parking_lot = self.cell
                 self.parking_lot.reserved = True
                 if self.parking_timer is None:
-                    self.parking_timer = random.randint(50, 150)
+                    lambd = 1/100  # 10 segundos de promedio
+                    self.parking_timer = int(random.expovariate(lambd))
             elif self.cell.type == 'ExitCell':
-                if len(self.path) == 0:
-                    self.color = self.arcade.color.GREEN
+                self.is_exiting = True  # Indicar que el vehículo está saliendo
+                self.color = self.arcade.color.GREEN
             else:
-                self.color = self.arcade.color.BLUE if not self.parking_timer else self.arcade.color.RED
+                if self.is_exiting:
+                    self.color = self.arcade.color.RED  # Rojo si está saliendo
+                else:
+                    self.color = self.arcade.color.BLUE if not self.parking_timer else self.arcade.color.RED
 
     def update_parking_timer(self):
         if self.parking_timer is not None:

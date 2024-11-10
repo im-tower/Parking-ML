@@ -51,6 +51,7 @@ class NearestParkingAvailableController(Controller):
                     exit_paths.sort(key=lambda pair: len(pair[0]))
                     shortest_path, _ = exit_paths[0]
                     car.set_path(shortest_path)
+                    car.is_exiting = True  # Indica que el vehículo está saliendo
                     car.color = arcade.color.RED
                     # Liberar el parqueo cuando el auto comienza a salir
                     if car.parking_lot:
