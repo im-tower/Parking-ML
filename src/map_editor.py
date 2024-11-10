@@ -76,6 +76,8 @@ class Window(arcade.Window):
             self.import_map()
         elif symbol == arcade.key.S: # Casilla de Spawn
             self.brush = arcade.color.ORANGE
+        elif symbol == arcade.key.Z: # Casilla de salida
+            self.brush = arcade.color.MINT
 
     def on_mouse_release(self, x: int, y: int, button: int, modifiers: int) -> bool | None:
         if self.brush:
@@ -104,6 +106,8 @@ class Window(arcade.Window):
                 self.grid[i][j]["direction"] = "parking"
             elif self.brush == arcade.color.ORANGE:
                 self.grid[i][j]["direction"] = "spawn"
+            elif self.brush == arcade.color.MINT:
+                self.grid[i][j]["direction"] = "exit"
             else:
                 self.grid[i][j]["direction"] = None
 
@@ -172,6 +176,8 @@ class Window(arcade.Window):
                         self.brush = arcade.color.PURPLE
                     elif direction == "parking":
                         self.brush = arcade.color.PINK
+                    elif direction == "exit":
+                        self.brush = arcade.color.MINT
                     else:
                         self.brush = arcade.color.WHITE
 

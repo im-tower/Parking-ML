@@ -1,5 +1,5 @@
 import arcade
-from cell import Cell, ParkingLot, SpawnCell
+from cell import Cell, ParkingLot, SpawnCell, ExitCell
 from car import Car
 from timer import Timer
 import random
@@ -14,7 +14,7 @@ SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 650
 SCREEN_TITLE = "Simulator"
 SIMULATION_SPEED = 0.1
-LAMBDA_CARS = 1 # 1 car every 3 ticks.
+LAMBDA_CARS = 1/3 # 1 car every 3 ticks.
 
 
 class Window(arcade.Window):
@@ -149,6 +149,12 @@ class Window(arcade.Window):
                         grid[int(i)][int(j)].connect(grid[int(i) + 1][int(j)])
                     elif direction == 'spawn':
                         grid[int(i)][int(j)] = SpawnCell(arcade, int(i) * 20 + 10, int(j) * 20 + 10)
+                        grid[int(i)][int(j)].connect(grid[int(i)][int(j) + 1])
+                        grid[int(i)][int(j)].connect(grid[int(i)][int(j) - 1])
+                        grid[int(i)][int(j)].connect(grid[int(i) - 1][int(j)])
+                        grid[int(i)][int(j)].connect(grid[int(i) + 1][int(j)])
+                    elif direction == 'exit':
+                        grid[int(i)][int(j)] = ExitCell(arcade, int(i) * 20 + 10, int(j) * 20 + 10)
                         grid[int(i)][int(j)].connect(grid[int(i)][int(j) + 1])
                         grid[int(i)][int(j)].connect(grid[int(i)][int(j) - 1])
                         grid[int(i)][int(j)].connect(grid[int(i) - 1][int(j)])

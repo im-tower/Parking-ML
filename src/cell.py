@@ -100,3 +100,18 @@ class SpawnCell(Cell):
     def spawn_car(self):
         self.available = False
         return Car(self.arcade, self)
+    
+class ExitCell(Cell):
+    size = 20
+    def __init__(self, arcade, x, y) -> None:
+        super().__init__(arcade, x, y)
+        self.color = self.arcade.color.RED
+        self.type = 'ExitCell'
+
+    def draw(self):
+        self.arcade.draw_lbwh_rectangle_filled(self.x, self.y, self.size, self.size, self.color)
+
+    def connect(self, cell):
+        self.adjacent_cells.append(cell)
+        cell.adjacent_cells.append(self)
+        return self
