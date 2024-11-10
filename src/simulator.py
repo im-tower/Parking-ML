@@ -93,6 +93,7 @@ class Window(arcade.Window):
                          box_x +5, box_y + 30, arcade.color.BLACK, 11)
 
     def on_update(self, delta_time):
+        # Actualizar la pantalla
         if self.next_update_time > 0:
             self.next_update_time -= delta_time
             return
@@ -104,26 +105,33 @@ class Window(arcade.Window):
             available_spawns = [cell for cell in self.spawn_cells if cell.available]
             if len(available_spawns) > 0:
                 select = random.randint(0, len(available_spawns) - 1)
-                spawn_cell = available_spawns[select]  # Usar available_spawns en lugar de self.spawn_cells
+                spawn_cell = available_spawns[select]
                 self.cars.append(spawn_cell.spawn_car())
 
         # Actualiza el controlador y los movimientos
         self.controller.update()
         self.next_update_time = SIMULATION_SPEED
+        
+        # Lista para almacenar los autos que deben ser eliminados
+        cars_to_remove = []
+        
+        # Mover cada auto y verificar si llegó a la salida
         for car in self.cars:
             car.move()
-
-        # Eliminar autos que han llegado a una salida
-        cars_to_remove = []
-        for car in self.cars:
-            if isinstance(car.cell, ExitCell) and len(car.path) == 0:  # Solo remover si ha terminado su path
+            # Si el auto está en una celda de salida, marcarlo para eliminación
+            if car.cell.type == 'ExitCell':
                 cars_to_remove.append(car)
+                # Liberar el espacio de estacionamiento si el auto lo tenía
                 if car.parking_lot:
                     car.parking_lot.reserved = False
                     car.parking_lot.available = True
+                # Liberar la celda de salida
+                car.cell.available = True
 
+        # Eliminar los autos que llegaron a la salida
         for car in cars_to_remove:
-            self.cars.remove(car)
+            if car in self.cars:  # Verificación adicional por seguridad
+                self.cars.remove(car)
 
 
 
