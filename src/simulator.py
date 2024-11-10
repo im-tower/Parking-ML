@@ -24,6 +24,9 @@ class Window(arcade.Window):
         super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
         self.average_search_time = 0
         self.average_pollution = 0
+        self.grid = []  # Inicializamos self.grid como una lista vacía
+        self.cells = []  # Inicializamos self.cells también aquí
+        self.exit_cells = []  # Inicializamos self.exit_cells aquí
 
     def setup(self):
         self.next_update_time = 0
@@ -37,6 +40,7 @@ class Window(arcade.Window):
         self.total_pollution = 0
         self.timer_spawn = Timer(random.expovariate(LAMBDA_CARS))
         self.arrival_times = []
+        self.exit_cells = [cell for cell in self.cells if isinstance(cell, ExitCell)]  # Asigna exit_cells después de cargar el mapa
 
     def on_draw(self):
         self.clear()
@@ -89,22 +93,39 @@ class Window(arcade.Window):
                          box_x +5, box_y + 30, arcade.color.BLACK, 11)
 
     def on_update(self, delta_time):
-        # Actualizar la pantalla
         if self.next_update_time > 0:
             self.next_update_time -= delta_time
             return
+
+        # Temporizador para spawn de autos
         if self.timer_spawn.update(1):
             self.timer_spawn.reset(round(random.expovariate(LAMBDA_CARS)))
             self.arrival_times.append(self.timer_spawn.time)
             available_spawns = [cell for cell in self.spawn_cells if cell.available]
             if len(available_spawns) > 0:
                 select = random.randint(0, len(available_spawns) - 1)
-                self.cars.append(self.spawn_cells[select].spawn_car())
+                spawn_cell = available_spawns[select]  # Usar available_spawns en lugar de self.spawn_cells
+                self.cars.append(spawn_cell.spawn_car())
 
+        # Actualiza el controlador y los movimientos
         self.controller.update()
         self.next_update_time = SIMULATION_SPEED
         for car in self.cars:
             car.move()
+
+        # Eliminar autos que han llegado a una salida
+        cars_to_remove = []
+        for car in self.cars:
+            if isinstance(car.cell, ExitCell) and len(car.path) == 0:  # Solo remover si ha terminado su path
+                cars_to_remove.append(car)
+                if car.parking_lot:
+                    car.parking_lot.reserved = False
+                    car.parking_lot.available = True
+
+        for car in cars_to_remove:
+            self.cars.remove(car)
+
+
 
     def load_map(self):
         # Crear una ventana de diálogo para seleccionar un archivo
