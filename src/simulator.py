@@ -24,6 +24,7 @@ class Window(arcade.Window):
         super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
         self.average_search_time = 0
         self.average_pollution = 0
+        self.total_cars = 0
         self.grid = []  # Inicializamos self.grid como una lista vacía
         self.cells = []  # Inicializamos self.cells también aquí
         self.exit_cells = []  # Inicializamos self.exit_cells aquí
@@ -56,7 +57,7 @@ class Window(arcade.Window):
     def draw_info(self):
         # Calcular promedios
         car_count = len(self.cars)
-    
+        self.total_cars = car_count
     # Calcular el tiempo de búsqueda promedio y la contaminación promedio
         if car_count > 0:
             total_search_time = sum(car.search_time for car in self.cars)
@@ -91,6 +92,8 @@ class Window(arcade.Window):
                          box_x +5, box_y + 50, arcade.color.BLACK, 11)
         arcade.draw_text(f"Contaminación promedio: {self.average_pollution:.2f}", 
                          box_x +5, box_y + 30, arcade.color.BLACK, 11)
+        arcade.draw_text(f"Cantida de vehiculos: {self.total_cars:.1f}", 
+                         box_x +5, box_y + 10, arcade.color.BLACK, 11)
 
     def on_update(self, delta_time):
         # Actualizar la pantalla
